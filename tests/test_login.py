@@ -66,5 +66,3 @@ def test_logout(setup):
     # Verify that the user is redirected to the login page after logout
     WebDriverWait(setup, 10).until(EC.url_contains(LOGIN_URL))
     assert False
-
-    
