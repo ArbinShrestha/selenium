@@ -7,15 +7,12 @@ class CompanyRegistrationPage:
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(self.driver, 5)
-        # self.company_type = (By.XPATH, "//input[@type='radio' and @name='companyType' and @value='{}']")
         self.company_name = (By.ID, "representative-name")
         self.company_name_katakana = (By.ID, "representative-name-katakana")
         self.company_number = (By.ID, "corporate-number")
         self.company_email = (By.ID, "company-email")
-        self.industry = (By.ID, "company-industry-id")
+        # self.industry = (By.ID, "company-industry-id")
         self.company_description = (By.ID, "company-description")
-        # self.company_logo = (By.XPATH, "//*[contains(text(),'会社のロゴを選択')]")
-        # self.company_banner = (By.XPATH, "//*[contains(text(),'会社のバナーを選択')]")
         self.company_logo = (By.XPATH, "//input[@type='file' and @id='company-logo']")
         self.company_banner = (By.XPATH, "//input[@type='file' and @id='company-banner']")
         self.postal_code = (By.ID, "postal-code")
@@ -40,6 +37,33 @@ class CompanyRegistrationPage:
     def get_company_type_locator(self, value):
         return (By.XPATH, f"//input[@type='radio' and @name='companyType' and @value='{value}']")
     
+    def select_industry(self, industry_name):
+        # Step 1: Click the dropdown
+        industry_dropdown = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.ID, "company-industry-id")))
+        industry_dropdown.click()
+
+        # Step 2: Wait for and click the correct list item
+        option_xpath = f"//li[contains(text(), '{industry_name}')]"
+        industry_option = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, option_xpath)))
+        industry_option.click()
+    
+    def select_tags(self, company_tags, sub_tags):
+        # Step 1: Click the company tags input
+        company_tags_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(self.company_tags))
+        company_tags_input.click()
+        # Step 2: Enter the company tags
+        
+        company_tags_options = f"//li[contains(text(), '{company_tags}')]"
+        first_suggestion = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, company_tags_options)))
+        first_suggestion.click()
+
+        # Step 4: Click the sub tags input
+        sub_tags_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(self.sub_tags))
+        sub_tags_input.click()
+        
+        sub_tags_options = f"//li[contains(text(), '{sub_tags}')]"
+        first_sub_suggestion = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, sub_tags_options)))
+        first_sub_suggestion.click()
 
     def company_information(self, company_type, company_name, company_name_katakana, company_number, company_email, industry, company_description, company_logo, company_banner, postal_code, building_name, website, main_phone_number):
         WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(self.get_company_type_locator(company_type))).click()        
@@ -49,7 +73,8 @@ class CompanyRegistrationPage:
         self.driver.find_element(*self.company_name_katakana).send_keys(company_name_katakana)
         self.driver.find_element(*self.company_number).send_keys(company_number)
         self.driver.find_element(*self.company_email).send_keys(company_email)
-        self.driver.find_element(*self.industry).send_keys(industry)
+        self.select_industry(industry)
+
         self.driver.find_element(*self.company_description).send_keys(company_description)
         self.driver.find_element(*self.company_logo).send_keys(company_logo)
         self.driver.find_element(*self.company_banner).send_keys(company_banner)
@@ -81,6 +106,14 @@ class CompanyRegistrationPage:
         self.driver.find_element(*self.confirm_password).send_keys(confirm_password)
         self.driver.find_element(*self.phone_number).send_keys(phone_number)
         self.driver.find_element(*self.profile_image).send_keys(profile_image)
-        self.driver.find_element(*self.company_tags).send_keys(company_tags)
-        self.driver.find_element(*self.sub_tags).send_keys(sub_tags)
+        self.select_tags(company_tags, sub_tags)
         # self.driver.find_element(*self.submit_button).click()
+
+        try:
+            error_locator = (By.CSS_SELECTOR, ".MuiFormHelperText-root.Mui-error")
+            WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located(error_locator))
+            errors = self.driver.find_elements(*error_locator)
+            for e in errors:
+                print("Validation Error:", e.text)
+        except TimeoutException:
+            print("No validation errors found")
