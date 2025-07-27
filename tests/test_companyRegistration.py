@@ -14,7 +14,7 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 
 
-REGISTRATION_URL = "https://willc-stg.tai.com.np/admin/company/register"
+REGISTRATION_URL = "https://willc.tai.com.np/admin/company/register"
 COMPANY_REGISTRATION_KEYWORD = "会社情報登録"
 
 @pytest.fixture
