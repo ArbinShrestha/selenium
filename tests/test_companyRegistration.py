@@ -61,3 +61,10 @@ def test_company_registration(setup):
         company_tags="Default Company Tag",
         sub_tags="Company tag 1"
     )
+
+    #assert successful registration
+    assert registration.company_registered(company_name="Test Company 1")
+
+    # #delete registered company
+    # registration.delete_company(company_name="Test Company 1")
+

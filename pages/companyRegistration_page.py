@@ -33,6 +33,8 @@ class CompanyRegistrationPage:
         self.company_tags = (By.ID, "companyTagsCategories")
         self.sub_tags = (By.ID, "tags")
         self.submit_button = (By.CSS_SELECTOR, "button[type='submit']")
+
+        # self.toast_message = (By.CSS_SELECTOR, "div.Toastify__toast--success[role='alert']")
     # in page class
     def get_company_type_locator(self, value):
         return (By.XPATH, f"//input[@type='radio' and @name='companyType' and @value='{value}']")
@@ -117,3 +119,36 @@ class CompanyRegistrationPage:
                 print("Validation Error:", e.text)
         except TimeoutException:
             print("No validation errors found")
+
+    def company_registered(self, company_name): #need to fix this
+        try: 
+            success = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(self.company_name))
+            # Check if the success message contains the company name
+
+            assert "登録が完了" in success.text
+
+            # Navigate to the company list page to verify registration
+            self.driver.get("https://willc.tai.com.np/admin/companies")
+
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, f"//td[contains(text(), '{company_name}')]")))
+            return True
+        except:
+            return False
+        
+    #delete not implemented
+    # def delete_company(self, company_name):
+    #     self.driver.get("https://willc.tai.com.np/admin/company/list")
+
+    #     # Wait for table and find row
+    #     WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+
+    #     row = self.driver.find_element(By.XPATH, f"//tr[td[contains(text(), '{company_name}')]]")
+    #     delete_btn = row.find_element(By.XPATH, ".//button[contains(@aria-label, '削除')]")  # adjust selector if needed
+    #     delete_btn.click()
+
+    #     # Confirm modal
+    #     confirm_button = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '削除')]")))
+    #     confirm_button.click()
+
+    #     # Assert deletion
+    #     WebDriverWait(self.driver, 5).until_not(EC.presence_of_element_located((By.XPATH, f"//td[contains(text(), '{company_name}')]")))
