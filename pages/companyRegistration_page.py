@@ -109,7 +109,7 @@ class CompanyRegistrationPage:
         self.driver.find_element(*self.phone_number).send_keys(phone_number)
         self.driver.find_element(*self.profile_image).send_keys(profile_image)
         self.select_tags(company_tags, sub_tags)
-        # self.driver.find_element(*self.submit_button).click()
+        self.driver.find_element(*self.submit_button).click()
 
         try:
             error_locator = (By.CSS_SELECTOR, ".MuiFormHelperText-root.Mui-error")
@@ -120,17 +120,20 @@ class CompanyRegistrationPage:
         except TimeoutException:
             print("No validation errors found")
 
-    def company_registered(self, company_name): #need to fix this
+    def company_registered(self, company_name):
         try: 
-            success = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(self.company_name))
-            # Check if the success message contains the company name
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//h3[contains(text(), '会社アカウントが正常に作成されました')]")))
 
-            assert "登録が完了" in success.text
+            company_name_element = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, f"//h5[contains(text(), '{company_name}')]")))
+
+            actual_name = company_name_element.text.strip()
+            
+            assert company_name in actual_name, f"Expected company name '{company_name}' not found. Got: '{actual_name}'"
 
             # Navigate to the company list page to verify registration
             self.driver.get("https://willc.tai.com.np/admin/companies")
 
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, f"//td[contains(text(), '{company_name}')]")))
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(company_name_element))
             return True
         except:
             return False
