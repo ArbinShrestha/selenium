@@ -56,7 +56,7 @@ def test_company_registration(setup):
         email="yamada.taro@example.com",
         password="password123",
         confirm_password="password123",
-        phone_number="012345678911",
+        phone_number="0123456789",
         profile_image=profile_image,
         company_tags="Default Company Tag",
         sub_tags="Company tag 1"

@@ -109,7 +109,7 @@ class CompanyRegistrationPage:
         self.driver.find_element(*self.phone_number).send_keys(phone_number)
         self.driver.find_element(*self.profile_image).send_keys(profile_image)
         self.select_tags(company_tags, sub_tags)
-        self.driver.find_element(*self.submit_button).click()
+        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(self.submit_button)).click()
 
         try:
             error_locator = (By.CSS_SELECTOR, ".MuiFormHelperText-root.Mui-error")
