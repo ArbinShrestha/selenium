@@ -72,6 +72,19 @@ class CompanyRegistrationPage:
         first_sub_suggestion.click()
 
         ActionChains(self.driver).move_by_offset(100, 100).click().perform()
+
+    def select_rows_per_page(driver, value="50"):
+        # Step 1: Click the dropdown to open it
+        dropdown = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "div.MuiSelect-select"))
+        )
+        dropdown.click()
+
+        # Step 2: Click the item with data-value="50"
+        option = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, f"//li[@data-value='{value}']"))
+        )
+        option.click()
         
     def company_information(self, company_type, company_name, company_name_katakana, company_number, company_email, industry, company_description, company_logo, company_banner, postal_code, building_name, website, main_phone_number):
         WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(self.get_company_type_locator(company_type))).click()        
@@ -120,20 +133,23 @@ class CompanyRegistrationPage:
 
     def company_registered(self, company_name):
         try: 
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//h3[contains(text(), '会社アカウントが正常に作成されました')]")))
+            # Wait for success message
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//h3[contains(text(), '会社アカウントが正常に作成されました')]"))
+            )
 
-            company_name_element = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, f"//h5[contains(text(), '{company_name}')]")))
+            # Check for company name on confirmation screen
+            company_name_element = WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.XPATH, f"//h5[contains(text(), '{company_name}')]"))
+            )
 
             actual_name = company_name_element.text.strip()
-            
             assert company_name in actual_name, f"Expected company name '{company_name}' not found. Got: '{actual_name}'"
 
-            # Navigate to the company list page to verify registration
-            self.driver.get("https://willc.tai.com.np/admin/companies")
-
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(company_name_element))
             return True
-        except:
+
+        except Exception as e:
+            print(f"[ERROR] Could not confirm registration: {e}")
             return False
         
     

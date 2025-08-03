@@ -34,10 +34,10 @@ def test_company_registration(setup):
     # Fill in company information
     registration.company_information(
         company_type="solo",
-        company_name="Test Company 1",
+        company_name="Test Company 4",
         company_name_katakana="テストカンパニー",
-        company_number="1234567890123",
-        company_email="companyemail@example.com",
+        company_number="9876543213644",
+        company_email="companyemail+4@example.com",
         industry="IT・ソフトウェア・情報処理・ゲーム",
         company_description="This is a test company.",
         company_logo=company_logo,
@@ -53,17 +53,17 @@ def test_company_registration(setup):
         firstname="太郎",
         seiname="ヤマダ",
         meiname="タロウ",
-        email="yamada.taro@example.com",
+        email="yamada.taro+4@example.com",
         password="password123",
         confirm_password="password123",
-        phone_number="0123456789",
+        phone_number="03265495134",
         profile_image=profile_image,
         company_tags="Default Company Tag",
         sub_tags="Company tag 1"
     )
 
     #assert successful registration
-    assert registration.company_registered(company_name="Test Company 1")
+    assert registration.company_registered(company_name="Test Company 4")
 
     # #delete registered company
     # registration.delete_company(company_name="Test Company 1")
