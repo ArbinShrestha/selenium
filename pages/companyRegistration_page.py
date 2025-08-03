@@ -2,6 +2,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
 class CompanyRegistrationPage:
     def __init__(self, driver):
@@ -51,22 +53,26 @@ class CompanyRegistrationPage:
     
     def select_tags(self, company_tags, sub_tags):
         # Step 1: Click the company tags input
-        company_tags_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(self.company_tags))
+        company_tags_input = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(self.company_tags))
         company_tags_input.click()
         # Step 2: Enter the company tags
         
         company_tags_options = f"//li[contains(text(), '{company_tags}')]"
-        first_suggestion = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, company_tags_options)))
+        first_suggestion = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, company_tags_options)))
         first_suggestion.click()
 
-        # Step 4: Click the sub tags input
-        sub_tags_input = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(self.sub_tags))
+        ActionChains(self.driver).move_by_offset(100, 100).click().perform()
+
+
+        sub_tags_input = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(self.sub_tags))
         sub_tags_input.click()
         
         sub_tags_options = f"//li[contains(text(), '{sub_tags}')]"
-        first_sub_suggestion = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, sub_tags_options)))
+        first_sub_suggestion = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, sub_tags_options)))
         first_sub_suggestion.click()
 
+        ActionChains(self.driver).move_by_offset(100, 100).click().perform()
+        
     def company_information(self, company_type, company_name, company_name_katakana, company_number, company_email, industry, company_description, company_logo, company_banner, postal_code, building_name, website, main_phone_number):
         WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(self.get_company_type_locator(company_type))).click()        
 
@@ -87,14 +93,10 @@ class CompanyRegistrationPage:
         self.driver.find_element(*self.next_button).click()
         
         # Wait and check for validation error message
-        try:
-            error_locator = (By.CSS_SELECTOR, ".MuiFormHelperText-root.Mui-error")
-            WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located(error_locator))
-            errors = self.driver.find_elements(*error_locator)
-            for e in errors:
-                print("Validation Error:", e.text)
-        except TimeoutException:
-            print("No validation errors found")
+        error_message = self.get_error_message()
+        if error_message:
+            print("Validation Error:", error_message)
+            raise Exception(f"Company information validation failed: {error_message}")
 
     def create_account(self, lastname, firstname, seiname, meiname, email, password, confirm_password, phone_number, profile_image, company_tags, sub_tags):
 
@@ -109,16 +111,12 @@ class CompanyRegistrationPage:
         self.driver.find_element(*self.phone_number).send_keys(phone_number)
         self.driver.find_element(*self.profile_image).send_keys(profile_image)
         self.select_tags(company_tags, sub_tags)
-        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(self.submit_button)).click()
+        self.driver.find_element(*self.submit_button).click()
 
-        try:
-            error_locator = (By.CSS_SELECTOR, ".MuiFormHelperText-root.Mui-error")
-            WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located(error_locator))
-            errors = self.driver.find_elements(*error_locator)
-            for e in errors:
-                print("Validation Error:", e.text)
-        except TimeoutException:
-            print("No validation errors found")
+        error_message = self.get_error_message()
+        if error_message:
+            print("Validation Error:", error_message)
+            raise Exception(f"Create Account validation failed: {error_message}")
 
     def company_registered(self, company_name):
         try: 
@@ -138,6 +136,25 @@ class CompanyRegistrationPage:
         except:
             return False
         
+    
+    def get_error_message(self):
+        try:
+            # 1. Check for toast message
+            toast = self.wait.until(EC.visibility_of_element_located(
+                (By.CSS_SELECTOR, "div.Toastify__toast--error[role='alert']")))
+            return toast.text.strip()
+        except TimeoutException:
+            pass
+
+        try:
+            error_locator = (By.CSS_SELECTOR, ".MuiFormHelperText-root.Mui-error")
+            WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located(error_locator))
+            errors = self.driver.find_elements(*error_locator)
+            for e in errors:
+                print("Validation Error:", e.text)
+        except TimeoutException:
+            print("No validation errors found")
+
     #delete not implemented
     # def delete_company(self, company_name):
     #     self.driver.get("https://willc.tai.com.np/admin/company/list")
