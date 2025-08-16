@@ -1,0 +1,25 @@
+# Core Selenium dependencies
+selenium==4.34.2
+webdriver-manager==4.0.2
+
+# Testing framework
+pytest==8.4.1
+pytest-html==4.1.1
+pytest-xdist==3.5.0
+pytest-parallel==0.1.1
+
+# Reporting
+allure-pytest==2.14.3
+allure-python-commons==2.14.3
+
+# Environment and configuration
+python-dotenv==1.1.1
+
+# HTTP requests (for API testing if needed)
+requests==2.32.4
+
+# Additional utilities
+attrs==25.3.0
+packaging==25.0
+pluggy==1.6.0
+py==1.11.0

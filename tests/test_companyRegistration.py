@@ -2,9 +2,6 @@ import pytest
 from pages.login_page import LoginPage
 from utils.driver_setup import get_driver 
 from pages.companyRegistration_page import CompanyRegistrationPage
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from dotenv import load_dotenv
 import os
 

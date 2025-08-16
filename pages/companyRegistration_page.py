@@ -2,7 +2,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 class CompanyRegistrationPage:
@@ -62,7 +61,7 @@ class CompanyRegistrationPage:
         first_suggestion.click()
 
         ActionChains(self.driver).move_by_offset(100, 100).click().perform()
-
+        # select.deselect_by_visible_text(company_tags_input)
 
         sub_tags_input = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(self.sub_tags))
         sub_tags_input.click()
