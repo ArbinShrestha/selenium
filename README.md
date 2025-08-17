@@ -1,6 +1,6 @@
 # Selenium Automation Framework
 
-[![CI/CD](https://github.com/yourusername/Willc-Functional/actions/workflows/quick-tests.yml/badge.svg)](https://github.com/yourusername/Willc-Functional/actions/workflows/quick-tests.yml)
+[![CI/CD](https://github.com/ArbinShrestha/Willc-Functional/actions/workflows/quick-tests.yml/badge.svg)](https://github.com/ArbinShrestha/Willc-Functional/actions/workflows/quick-tests.yml)
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Selenium](https://img.shields.io/badge/selenium-4.34.2-green.svg)](https://selenium-python.readthedocs.io/)
 [![Pytest](https://img.shields.io/badge/pytest-8.4.1-orange.svg)](https://docs.pytest.org/)
