@@ -1,0 +1,202 @@
+name: Selenium Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create .env file
+      run: |
+        echo "EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
+        echo "PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
+        
+    - name: Run smoke tests
+      run: |
+        python run_tests.py --smoke
+      env:
+        DISPLAY: :99
+        
+    - name: Run regression tests
+      run: |
+        python run_tests.py --regression
+      env:
+        DISPLAY: :99
+        
+    - name: Generate test reports
+      run: |
+        python run_tests.py --html
+        python run_tests.py --allure
+        
+    - name: Upload test reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-reports-${{ matrix.python-version }}
+        path: |
+          reports/
+          allure-results/
+        retention-days: 30
+        
+    - name: Upload screenshots on failure
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: failure-screenshots-${{ matrix.python-version }}
+        path: |
+          screenshots/
+          *.png
+        retention-days: 7
+
+  parallel-tests:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    strategy:
+      matrix:
+        test-module: [login, company, bulletin, admin, cms, roles]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create .env file
+      run: |
+        echo "EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
+        echo "PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
+        
+    - name: Run module tests
+      run: |
+        python run_tests.py --module ${{ matrix.test-module }}
+      env:
+        DISPLAY: :99
+        
+    - name: Upload module reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.test-module }}-reports
+        path: |
+          reports/
+          allure-results/
+        retention-days: 30
+
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create .env file
+      run: |
+        echo "EMAIL=${{ secrets.TEST_EMAIL }}" >> .env
+        echo "PASSWORD=${{ secrets.TEST_PASSWORD }}" >> .env
+        
+    - name: Run performance tests
+      run: |
+        python run_tests.py --headless
+      env:
+        DISPLAY: :99
+        
+    - name: Upload performance reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-reports
+        path: |
+          reports/
+          allure-results/
+        retention-days: 30
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [test, parallel-tests, performance-tests]
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: success()
+      run: |
+        echo "✅ All tests passed successfully!"
+        
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "❌ Some tests failed. Please check the reports."
+

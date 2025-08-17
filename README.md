@@ -1,5 +1,10 @@
 # Selenium Automation Framework
 
+[![CI/CD](https://github.com/yourusername/Willc-Functional/actions/workflows/quick-tests.yml/badge.svg)](https://github.com/yourusername/Willc-Functional/actions/workflows/quick-tests.yml)
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Selenium](https://img.shields.io/badge/selenium-4.34.2-green.svg)](https://selenium-python.readthedocs.io/)
+[![Pytest](https://img.shields.io/badge/pytest-8.4.1-orange.svg)](https://docs.pytest.org/)
+
 A comprehensive Selenium WebDriver automation framework for testing web applications, built with Python, Pytest, and Page Object Model design pattern.
 
 ## 🚀 Features
@@ -292,27 +297,77 @@ pytest -vvv
 
 ## 🚀 CI/CD Integration
 
-### GitHub Actions Example
+### GitHub Actions Workflows
+
+The framework includes two GitHub Actions workflows:
+
+#### 1. Quick Tests (`quick-tests.yml`)
+- Runs on every push and pull request
+- Executes smoke tests only
+- Fast execution for development feedback
+- Generates HTML reports
+
+#### 2. Full Test Suite (`selenium-tests.yml`)
+- Comprehensive testing with multiple Python versions
+- Parallel test execution by modules
+- Performance testing
+- Multiple report formats (HTML, Allure, JUnit XML)
+
+### Setup Instructions
+
+1. **Add GitHub Secrets**:
+   Go to your repository → Settings → Secrets and variables → Actions
+   Add these secrets:
+   - `TEST_EMAIL`: Your test account email
+   - `TEST_PASSWORD`: Your test account password
+
+2. **Update Badge URLs**:
+   Replace `yourusername` in the README badges with your actual GitHub username
+
+3. **Push to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Add CI/CD workflows"
+   git push origin main
+   ```
+
+### Workflow Features
+
+- **Automatic Testing**: Runs on every push and pull request
+- **Multiple Python Versions**: Tests compatibility with Python 3.9, 3.10, 3.11
+- **Parallel Execution**: Runs tests in parallel for faster results
+- **Artifact Storage**: Saves test reports and screenshots
+- **Failure Handling**: Captures screenshots on test failures
+- **Caching**: Caches dependencies for faster builds
+
+### Example Workflow Output
+
 ```yaml
-name: Selenium Tests
-on: [push, pull_request]
+name: Quick Tests
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
 jobs:
-  test:
+  quick-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.11
+    - name: Install Chrome
+      uses: browser-actions/setup-chrome@v1
     - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-    - name: Run tests
-      run: |
-        python run_tests.py --headless
+      run: pip install -r requirements.txt
+    - name: Run smoke tests
+      run: python run_tests.py --smoke
     - name: Upload reports
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: test-reports
         path: reports/
